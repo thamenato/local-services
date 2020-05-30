@@ -1,0 +1,25 @@
+version: "3.3"
+
+services:
+  wiki:
+    image: requarks/wiki:2
+    container_name: wikijs
+    environment:
+      DB_TYPE: sqlite
+      DB_FILEPATH: /wiki/db.sqlite
+    restart: unless-stopped
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "traefik_default"
+      traefik.http.routers.wikijs_insecure.rule: "Host(`wiki.cthylla.codes`)"
+      traefik.http.routers.wikijs_insecure.middlewares: "redirect@file"
+      traefik.http.routers.wikijs.rule: "Host(`wiki.cthylla.codes`)"
+      traefik.http.routers.wikijs.tls: "true"
+      traefik.http.services.wikijs.loadbalancer.server.port: "3000"
+    volumes:
+      - ./db.sqlite:/wiki/db.sqlite
+
+networks:
+  default:
+    external:
+      name: traefik_default

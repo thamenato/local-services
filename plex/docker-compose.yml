@@ -1,0 +1,47 @@
+version: '3.7'
+services:
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker
+    restart: unless-stopped
+    hostname: plex.cthylla.codes
+    ports:
+     - 32400:32400/tcp
+     - 32400:32400/udp
+     - 3005:3005/tcp
+     - 8324:8324/tcp
+     - 32469:32469/tcp
+     - 1900:1900/udp
+     - 32410:32410/udp
+     - 32412:32412/udp
+     - 32413:32413/udp
+     - 32414:32414/udp
+    environment:
+      - TZ=America/New_York
+      - PLEX_CLAIM="claim-yENxhh-gs-CdWHU_WU5s"
+      - ADVERTISE_IP="https://plex.cthylla.codes:443"
+      - PGID=1000
+      - PUID=1000
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
+      - VERSION=docker
+    volumes:
+      - ./config:/config
+      - ./transcode:/transcode
+      - ./data:/data
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "traefik_default"
+      traefik.http.routers.plex_insecure.rule: "Host(`plex.cthylla.codes`)"
+      traefik.http.routers.plex_insecure.middlewares: "redirect@file"
+      traefik.http.routers.plex.rule: "Host(`plex.cthylla.codes`)"
+      traefik.http.routers.plex.tls: "true"
+      traefik.http.services.plex.loadbalancer.server.port: "32400"
+    devices:
+      - /dev/dri:/dev/dri
+
+
+networks:
+  default:
+    external:
+      name: traefik_default
